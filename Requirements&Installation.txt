@@ -1,0 +1,33 @@
+# Python dependencies
+# (Only standard libraries are used in recon.py, so nothing required here)
+
+# External tools required (must be installed on your system and accessible in $PATH):
+# - nmap
+# - dirsearch
+# - ffuf
+# - nikto
+# - whatweb
+# - snmpwalk (from net-snmp package)
+# - smbmap
+
+# -----------------------------------------------------------
+# 📦 Installation Commands (Linux - Debian/Ubuntu/Kali)
+# -----------------------------------------------------------
+
+# Update system
+# sudo apt update
+
+# Install core tools
+# sudo apt install -y nmap nikto whatweb snmp snmp-mibs-downloader smbmap
+
+# Install ffuf (from package manager)
+# sudo apt install -y ffuf
+
+# Install dirsearch (Python-based, from GitHub)
+# git clone https://github.com/maurosoria/dirsearch.git
+# cd dirsearch
+# sudo ln -s $(pwd)/dirsearch.py /usr/local/bin/dirsearch
+# cd ..
+
+# (Optional) Install smbmap with pip (if not available via apt)
+# pip install smbmap
