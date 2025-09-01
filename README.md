@@ -39,5 +39,5 @@ This repository is a growing collection of tools designed to **automate reconnai
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/recon-toolkit.git
+git clone https://github.com/adityaps6/tool_kit.git
 cd recon-toolkit
