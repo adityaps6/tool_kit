@@ -1,43 +1,66 @@
-# Recon & Enumeration Toolkit
+# 🛠️ Recon & Exploitation Toolkit
 
-This repository is a growing collection of tools designed to **automate reconnaissance, enumeration, exploitation, and related workflows** in a much simpler and more efficient way. The goal is to speed up repetitive tasks during penetration testing, Capture the Flag (CTF) competitions, and red team engagements.
+This repository contains two powerful Python-based tools designed to **automate reconnaissance, enumeration, exploitation, and vulnerability testing**.  
+The goal is to streamline workflows for **penetration testers, red teamers, and CTF players**, reducing repetitive tasks and speeding up the process of finding attack paths.
 
 ---
 
-## 📌 recon.py
+## 📌 Tools Overview
 
-`recon.py` is a Python-based automation script that orchestrates common recon and enumeration tasks against a given target. Instead of manually running multiple tools, this script chains them together, organizes results, and saves you valuable time.
+### 🔎 recon.py
+`recon.py` automates **reconnaissance and enumeration** by chaining multiple tools together. It scans a target, identifies services, and runs targeted enumeration modules.  
 
-### ✨ Features
-- **Automated Nmap Scan**  
-  - Service/version detection (`-sC -sV`)  
-  - Output neatly saved in `results/nmap.txt`
+**Key Features**
+- Automated **Nmap** scans (`-sC -sV`)  
+- Web enumeration (`dirsearch`, `ffuf`, `nikto`, `whatweb`)  
+- Service-specific modules (SMB, SNMP, FTP)  
+- Subdomain enumeration (for domains)  
+- Parallel execution with `ThreadPoolExecutor`  
+- Organized outputs saved under `results/`  
 
-- **Web Enumeration** (if HTTP/HTTPS detected)  
-  - `dirsearch` for hidden directories  
-  - `ffuf` for directory fuzzing  
-  - `nikto` for vulnerability scanning  
-  - `whatweb` for web technology detection  
+---
 
-- **Service-Specific Enumeration**  
-  - **SNMP** → `snmpwalk`  
-  - **SMB** → `smbmap`  
-  - **FTP** → `nmap ftp-anon`  
+### 💥 pwny.py
+`pwny.py` focuses on **exploitation assistance** by automating CVE lookups, exploit generation, and basic web vuln testing.  
 
-- **Subdomain Enumeration** (if input is a domain)  
-  - `ffuf` with top subdomains wordlist
-
-- **Parallel Execution**  
-  - Leverages `ThreadPoolExecutor` to run multiple scans concurrently  
-
-- **Organized Output**  
-  - All results saved into a chosen output directory (`results/` by default)  
+**Key Features**
+- **Auto-CVE Fetcher**  
+  - Query public CVE databases (`cve.circl.lu`)  
+  - Rank CVEs by severity, remote/local, and authentication  
+- **Exploit Launcher**  
+  - Predefined templates (Tomcat RCE, PHP LFI, etc.)  
+  - Auto-fill with target IP/port, path, and payload  
+- **Web Vulnerability Tester**  
+  - Quick payload injection for XSS, SQLi, LFI, RFI, and Command Injection  
+  - Simple detection heuristics + logging to `logs/`  
 
 ---
 
 ## ⚡ Usage
 
-### 1. Clone the repository
+### 🔎 recon.py
 ```bash
-git clone https://github.com/adityaps6/tool_kit.git
-cd recon-toolkit
+# Basic usage
+python3 recon.py -t <target>
+
+# Specify output directory
+python3 recon.py -t <target> -o results/htb_machine
+
+# Run with more threads
+python3 recon.py -t <target> -o results/ -T 10
+
+---
+
+### 💥 pwny.py
+```bash
+
+chmod +x pwny.py
+
+# Fetch CVEs for a product/version
+./pwny.py cve apache 2.4.49
+
+# Generate exploit from template
+./pwny.py exploit tomcat_rce --target 10.10.10.10 --path testapp --payload "<% out.println('pwned'); %>"
+
+# Test for common web vulnerabilities
+./pwny.py webtest http://10.10.10.10/index.php
