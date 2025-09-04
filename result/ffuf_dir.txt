@@ -1,0 +1,19 @@
+# FFUF Report
+
+  Command line : `ffuf -w /usr/share/wordlists/dirb/common.txt -u http://guardian.htb/FUZZ -o result/ffuf_dir.txt -of md`
+  Time: 2025-09-02T22:32:40-04:00
+
+  | FUZZ | URL | Redirectlocation | Position | Status Code | Content Length | Content Words | Content Lines | Content Type | Duration | ResultFile | ScraperData | Ffufhash
+  | :- | :-- | :--------------- | :---- | :------- | :---------- | :------------- | :------------ | :--------- | :----------- | :------------ | :-------- |
+  | .hta | http://guardian.htb/.hta |  | 11 | 403 | 277 | 20 | 10 | text/html; charset=iso-8859-1 | 8.322642ms |  |  | aa21bb
+  | .htpasswd | http://guardian.htb/.htpasswd |  | 13 | 403 | 277 | 20 | 10 | text/html; charset=iso-8859-1 | 1.166614899s |  |  | aa21bd
+  | .htaccess | http://guardian.htb/.htaccess |  | 12 | 403 | 277 | 20 | 10 | text/html; charset=iso-8859-1 | 1.167602984s |  |  | aa21bc
+  | cgi-bin/ | http://guardian.htb/cgi-bin/ |  | 820 | 403 | 277 | 20 | 10 | text/html; charset=iso-8859-1 | 8.812907ms |  |  | aa21b334
+  | css | http://guardian.htb/css | http://guardian.htb/css/ | 1114 | 301 | 310 | 20 | 10 | text/html; charset=iso-8859-1 | 9.650054ms |  |  | aa21b45a
+  |  | http://guardian.htb/ |  | 1 | 200 | 6741 | 2252 | 156 | text/html | 2.004153546s |  |  | aa21b1
+  | images | http://guardian.htb/images | http://guardian.htb/images/ | 1991 | 301 | 313 | 20 | 10 | text/html; charset=iso-8859-1 | 8.521041ms |  |  | aa21b7c7
+  | index.html | http://guardian.htb/index.html |  | 2020 | 200 | 6741 | 2252 | 156 | text/html | 9.438552ms |  |  | aa21b7e4
+  | javascript | http://guardian.htb/javascript | http://guardian.htb/javascript/ | 2145 | 301 | 317 | 20 | 10 | text/html; charset=iso-8859-1 | 8.891567ms |  |  | aa21b861
+  | js | http://guardian.htb/js | http://guardian.htb/js/ | 2179 | 301 | 309 | 20 | 10 | text/html; charset=iso-8859-1 | 7.912862ms |  |  | aa21b883
+  | server-status | http://guardian.htb/server-status |  | 3588 | 403 | 277 | 20 | 10 | text/html; charset=iso-8859-1 | 9.842055ms |  |  | aa21be04
+  

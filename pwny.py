@@ -21,7 +21,8 @@ from datetime import datetime
 
 # ============ CONFIG ============
 USER_AGENT = "HTN-Exploitation-Helper/1.0"
-CVE_API = "https://cve.circl.lu/api/search"
+CVE_API = "https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch="
+
 LOG_DIR = "logs"
 
 EXPLOIT_TEMPLATES = {
@@ -42,16 +43,44 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 # ================= CVE FETCHER =================
 def fetch_cves(product, version):
-    url = f"{CVE_API}/{product}/{version}"
+    url = f"{CVE_API}{product}%20{version}"
     r = requests.get(url, headers={"User-Agent": USER_AGENT})
     if r.status_code != 200:
         print(f"[!] Failed to fetch CVEs (status {r.status_code})")
         return []
+
     try:
-        return r.json()
+        data = r.json()
+        vulns = data.get("vulnerabilities", [])
+        results = []
+
+        for v in vulns:
+            cve_id = v["cve"]["id"]
+            summary = ""
+            if "descriptions" in v["cve"]:
+                for d in v["cve"]["descriptions"]:
+                    if d.get("lang") == "en":
+                        summary = d.get("value", "")
+            cvss = 0
+            vector = ""
+            metrics = v.get("metrics", {})
+            if "cvssMetricV31" in metrics:
+                cvssData = metrics["cvssMetricV31"][0]["cvssData"]
+                cvss = cvssData.get("baseScore", 0)
+                vector = cvssData.get("vectorString", "")
+            results.append({
+                "id": cve_id,
+                "summary": summary,
+                "cvss": cvss,
+                "cvss-vector": vector
+            })
+
+        return results
     except Exception as e:
         print(f"[!] Error parsing CVE response: {e}")
         return []
+
+
 
 
 def rank_cves(cves):

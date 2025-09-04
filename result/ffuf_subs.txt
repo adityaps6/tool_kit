@@ -1,0 +1,9 @@
+# FFUF Report
+
+  Command line : `ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://FUZZ.guardian.htb -o result/ffuf_subs.txt -of md`
+  Time: 2025-09-02T22:35:53-04:00
+
+  | FUZZ | URL | Redirectlocation | Position | Status Code | Content Length | Content Words | Content Lines | Content Type | Duration | ResultFile | ScraperData | Ffufhash
+  | :- | :-- | :--------------- | :---- | :------- | :---------- | :------------- | :------------ | :--------- | :----------- | :------------ | :-------- |
+  | portal | http://portal.guardian.htb | /login.php | 48 | 302 | 0 | 1 | 1 | text/html; charset=UTF-8 | 3.916295538s |  |  | 5483a30
+  
