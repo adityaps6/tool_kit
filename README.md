@@ -50,6 +50,7 @@ python3 recon.py -t <target> -o results/htb_machine
 python3 recon.py -t <target> -o results/ -T 10
 
 ---
+```
 
 ### 💥 pwny.py
 ```bash
