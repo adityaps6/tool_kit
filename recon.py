@@ -5,6 +5,7 @@ import os
 import re
 import concurrent.futures
 import sys
+import nmap
 
 # -------- Helper Functions -------- #
 
@@ -48,70 +49,110 @@ def run_cmd(command, outfile=None, quiet=False):
 
 # -------- Recon Functions (quiet=True to suppress messages) -------- #
 
+import nmap
+
 def nmap_scan(target, outdir):
-    print("[*] Running Nmap Scan...")
+    print("[*] Running Nmap Scan using python-nmap API...")
     outfile = os.path.join(outdir, "nmap.txt")
-    cmd = f"nmap -sC -sV -T4 -Pn -oN {outfile} {target}"
-    run_cmd(cmd, quiet=True)
-    with open(outfile) as f:
-        return f.read()
-    print(f"[+] NMAP Scan Results saved to: {outdir}")
+
+    nm = nmap.PortScanner()
+    # Equivalent of: nmap -sC -sV -T4 -Pn -p- -A
+    nm.scan(target, arguments='-sC -sV -T4 -Pn -p- -A')
+
+    results = []
+    for host in nm.all_hosts():
+        results.append("="*60)
+        results.append(f"Nmap scan report for {host}")
+        results.append(f"Host state: {nm[host].state()}")
+        results.append("="*60)
+
+        for proto in nm[host].all_protocols():
+            results.append(f"\nProtocol: {proto}")
+            ports = sorted(nm[host][proto].keys())
+
+            for port in ports:
+                service = nm[host][proto][port]
+                line = f"{port}/{proto}\t{service['state']}\t{service['name']}"
+                
+                # Add optional fields if available
+                if 'product' in service or 'version' in service:
+                    line += f"\t{service.get('product','')} {service.get('version','')}"
+                if 'extrainfo' in service and service['extrainfo']:
+                    line += f" ({service['extrainfo']})"
+                if 'cpe' in service and service['cpe']:
+                    line += f"\tCPE: {service['cpe']}"
+                
+                results.append(line)
+
+                # Include NSE script results
+                if 'script' in service:
+                    results.append("  [*] NSE Script Results:")
+                    for script_name, script_output in service['script'].items():
+                        results.append(f"    - {script_name}: {script_output}")
+
+    output = "\n".join(results)
+    with open(outfile, "w") as f:
+        f.write(output)
+
+    print(f"[+] NMAP Scan Results saved to: {outfile}")
+    return output
+
 
 
 def run_dirsearch(target, outdir):
     outfile = os.path.join(outdir, "dirsearch.txt")
     cmd = f"dirsearch -u http://{target} -e php,html,js -o {outfile}"
     run_cmd(cmd, quiet=True)
-    print(f"[+] dirsearch Results saved to: {outdir}")
+    print(f"[+] dirsearch Results saved to: {outfile}")
 
 
 def run_ffuf_dir(target, outdir):
     outfile = os.path.join(outdir, "ffuf_dir.txt")
     cmd = f"ffuf -w /usr/share/wordlists/dirb/common.txt -u http://{target}/FUZZ -o {outfile} -of md"
     run_cmd(cmd, quiet=True)
-    print(f"[+] FFUF_dir Results saved to: {outdir}")
+    print(f"[+] FFUF_dir Results saved to: {outfile}")
 
 
 def run_ffuf_subs(target, outdir):
     outfile = os.path.join(outdir, "ffuf_subs.txt")
     cmd = f"ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://FUZZ.{target} -o {outfile} -of md"
     run_cmd(cmd, quiet=True)
-    print(f"[+] FFUF_subdomain Results saved to: {outdir}")
+    print(f"[+] FFUF_subdomain Results saved to: {outfile}")
 
 
 def run_nikto(target, outdir):
     outfile = os.path.join(outdir, "nikto.txt")
     cmd = f"nikto -h {target} -o {outfile}"
     run_cmd(cmd, quiet=True)
-    print(f"[+] Nikto Results saved to: {outdir}")
+    print(f"[+] Nikto Results saved to: {outfile}")
 
 
 def run_whatweb(target, outdir):
     outfile = os.path.join(outdir, "whatweb.txt")
     cmd = f"whatweb {target} --log-verbose={outfile}"
     run_cmd(cmd, quiet=True)
-    print(f"[+] Whatweb Results saved to: {outdir}")
+    print(f"[+] Whatweb Results saved to: {outfile}")
 
 
 def run_snmp_enum(target, outdir):
     outfile = os.path.join(outdir, "snmpwalk.txt")
     cmd = f"snmpwalk -v2c -c public {target} > {outfile}"
     run_cmd(cmd, quiet=True)
-    print(f"[+] SNMP Results saved to: {outdir}")
+    print(f"[+] SNMP Results saved to: {outfile}")
 
 
 def run_smb_enum(target, outdir):
     outfile = os.path.join(outdir, "smb.txt")
     cmd = f"smbmap -H {target} > {outfile}"
     run_cmd(cmd, quiet=True)
-    print(f"[+] SMB Results saved to: {outdir}")
+    print(f"[+] SMB Results saved to: {outfile}")
 
 
 def run_ftp_enum(target, outdir):
     outfile = os.path.join(outdir, "ftp.txt")
     cmd = f"nmap -p21 --script ftp-anon {target} -oN {outfile}"
     run_cmd(cmd, quiet=True)
-    print(f"[+] FTP_enum Results saved to: {outdir}")
+    print(f"[+] FTP_enum Results saved to: {outfile}")
 
 
 # -------- Main Orchestrator -------- #
