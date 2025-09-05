@@ -52,18 +52,6 @@ signal.signal(signal.SIGINT, signal_handler)
 # -------- SCRAPER FUNCTIONS -------- #
 
 
-def search_circl_lu(cve_id):
-    """Scrape CIRCL LU for CVE"""
-    results = []
-    url = f"https://www.circl.lu/exploit/{cve_id}/"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
-        if r.status_code == 200:
-            results.append(url)
-    except Exception:
-        pass
-    return results
-
 
 def search_github(cve_id):
     """Search GitHub for repos & detect POC files"""
