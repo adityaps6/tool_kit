@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-cve_exploit_scraper.py - CVE Exploit & POC Finder
+explr.py - CVE Exploit & POC Finder
 
 Usage:
-    python3 cve_exploit_scraper.py CVE-2023-12345
+    python3 explr.py CVE-2023-12345
 """
 
 import requests
