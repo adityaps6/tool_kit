@@ -52,7 +52,6 @@ signal.signal(signal.SIGINT, signal_handler)
 # -------- SCRAPER FUNCTIONS -------- #
 
 
-
 def search_circl_lu(cve_id):
     """Scrape CIRCL LU for CVE"""
     results = []
