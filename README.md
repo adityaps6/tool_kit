@@ -36,6 +36,28 @@ The goal is to streamline workflows for **penetration testers, red teamers, and 
 
 ---
 
+### 🧩 explr.py
+
+`explr.py` is a **CVE Exploit & POC Finder** that automates searching multiple sources for proof-of-concept exploits and references to a given CVE. It saves results in JSON and plain text formats, including detailed grep.app hits.
+
+**Key Features**
+
+- Multi-source CVE search:
+
+- GitHub for repos and POC files (.py, .sh, .txt, .rb, .pl, .exe)
+
+- grep.app for code references across multiple languages (Python, JavaScript, YAML, JSON, Markdown)
+
+  - Owner ID tracking for grep.app results
+
+  - Multi-threaded searches for faster results
+
+  - Output saved in organized folders (explr_results/ by default)
+
+  - Separate TXT output for grep.app hits with snippets and branch info
+
+---
+
 ## ⚡ Usage
 
 ### 🔎 recon.py
@@ -65,3 +87,16 @@ chmod +x pwny.py
 
 # Test for common web vulnerabilities
 ./pwny.py webtest http://10.10.10.10/index.php
+
+---
+```
+### 🧩 explr.py
+```bash
+# Basic CVE search and results are by default stored in explr_results directory
+python3 explr.py CVE-2023-12345
+
+# Specify a custom output directory
+python3 explr.py CVE-2023-12345 -o my_results/
+
+---
+```
