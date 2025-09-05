@@ -55,54 +55,63 @@ def nmap_scan(target, outdir):
     run_cmd(cmd, quiet=True)
     with open(outfile) as f:
         return f.read()
+    print(f"[+] NMAP Scan Results saved to: {outdir}")
 
 
 def run_dirsearch(target, outdir):
     outfile = os.path.join(outdir, "dirsearch.txt")
     cmd = f"dirsearch -u http://{target} -e php,html,js -o {outfile}"
     run_cmd(cmd, quiet=True)
+    print(f"[+] dirsearch Results saved to: {outdir}")
 
 
 def run_ffuf_dir(target, outdir):
     outfile = os.path.join(outdir, "ffuf_dir.txt")
     cmd = f"ffuf -w /usr/share/wordlists/dirb/common.txt -u http://{target}/FUZZ -o {outfile} -of md"
     run_cmd(cmd, quiet=True)
+    print(f"[+] FFUF_dir Results saved to: {outdir}")
 
 
 def run_ffuf_subs(target, outdir):
     outfile = os.path.join(outdir, "ffuf_subs.txt")
     cmd = f"ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://FUZZ.{target} -o {outfile} -of md"
     run_cmd(cmd, quiet=True)
+    print(f"[+] FFUF_subdomain Results saved to: {outdir}")
 
 
 def run_nikto(target, outdir):
     outfile = os.path.join(outdir, "nikto.txt")
     cmd = f"nikto -h {target} -o {outfile}"
     run_cmd(cmd, quiet=True)
+    print(f"[+] Nikto Results saved to: {outdir}")
 
 
 def run_whatweb(target, outdir):
     outfile = os.path.join(outdir, "whatweb.txt")
     cmd = f"whatweb {target} --log-verbose={outfile}"
     run_cmd(cmd, quiet=True)
+    print(f"[+] Whatweb Results saved to: {outdir}")
 
 
 def run_snmp_enum(target, outdir):
     outfile = os.path.join(outdir, "snmpwalk.txt")
     cmd = f"snmpwalk -v2c -c public {target} > {outfile}"
     run_cmd(cmd, quiet=True)
+    print(f"[+] SNMP Results saved to: {outdir}")
 
 
 def run_smb_enum(target, outdir):
     outfile = os.path.join(outdir, "smb.txt")
     cmd = f"smbmap -H {target} > {outfile}"
     run_cmd(cmd, quiet=True)
+    print(f"[+] SMB Results saved to: {outdir}")
 
 
 def run_ftp_enum(target, outdir):
     outfile = os.path.join(outdir, "ftp.txt")
     cmd = f"nmap -p21 --script ftp-anon {target} -oN {outfile}"
     run_cmd(cmd, quiet=True)
+    print(f"[+] FTP_enum Results saved to: {outdir}")
 
 
 # -------- Main Orchestrator -------- #
