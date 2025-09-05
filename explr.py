@@ -129,6 +129,48 @@ def search_gitlab(cve_id):
         pass
     return results
 
+def search_grepapp(cve_id, outdir=None):
+    """Search grep.app API for references to CVE and save results in plain text"""
+    results = []
+    url = f"https://grep.app/api/search?f.lang=JSON&f.lang=Python&f.lang=JavaScript&f.lang=YAML&f.lang=Markdown&q={cve_id}"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+
+        if "results" in data:
+            for hit in data["results"]:
+                repo = hit.get("repo", {}).get("name", "unknown-repo")
+                path = hit.get("path", "unknown-path")
+                lines = hit.get("lines", [])
+                entry = f"Repo: {repo}\nPath: {path}\n"
+                if lines:
+                    entry += "Lines:\n"
+                    for l in lines:
+                        entry += f"  {l.get('line')}: {l.get('text')}\n"
+                entry += f"URL: https://grep.app/api/search?f.lang=JSON&f.lang=Python&f.lang=JavaScript&f.lang=YAML&f.lang=Markdown&q={cve_id}\n"
+                entry += "-"*50 + "\n"
+                results.append(entry)
+
+        # Save to a plain text file
+        if not outdir:
+            outdir = LOG_DIR
+        os.makedirs(outdir, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        grep_file = os.path.join(outdir, f"{cve_id.replace('/', '_')}-grepapp-{ts}.txt")
+        with open(grep_file, "w") as f:
+            f.writelines(results)
+
+        print(f"[+] Grep.app results saved to: {grep_file}")
+
+    except Exception as e:
+        print(f"[!] Error querying grep.app: {e}")
+
+    return results
+
+
+
+
 # -------- LOGGING -------- #
 def log_results(cve_id, results, outdir=None):
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -142,6 +184,7 @@ def log_results(cve_id, results, outdir=None):
 
 # -------- MAIN FUNCTION -------- #
 def main():
+    print_banner()
     parser = argparse.ArgumentParser(description="CVE Exploit & POC Finder")
     parser.add_argument("cve", help="CVE ID (e.g., CVE-2023-12345)")
     parser.add_argument("-o", "--outdir", help="Output directory for results")
@@ -152,6 +195,7 @@ def main():
 
     print(f"[+] Searching for exploits/POCs for {cve_id}...\n")
 
+    # Scrapers for JSON (exclude grepapp)
     scrapers = {
         "exploitdb": search_exploitdb,
         "circl_lu": search_circl_lu,
@@ -175,14 +219,17 @@ def main():
                 all_results[source] = []
                 print(f"[!] Error scraping {source}: {e}")
 
-    # Print results
+    # Print JSON results
     for source, urls in all_results.items():
         print(f"\n[{source.upper()}] Found {len(urls)} results:")
         for u in urls:
             print(f" - {u}")
 
-    # Log results
+    # Log JSON results
     log_results(cve_id, all_results, outdir)
 
+    # -------- Grep.app results (separate) -------- #
+    print("\n[+] Searching grep.app (separate output)...")
+    search_grepapp(cve_id, outdir)
 if __name__ == "__main__":
     main()

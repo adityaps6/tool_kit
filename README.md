@@ -41,13 +41,13 @@ The goal is to streamline workflows for **penetration testers, red teamers, and 
 ### 🔎 recon.py
 ```bash
 # Basic usage
-python3 recon.py -t <target>
+python3 recon.py <target>
 
 # Specify output directory
-python3 recon.py -t <target> -o results/htb_machine
+python3 recon.py <target> -o results/htb_machine
 
 # Run with more threads
-python3 recon.py -t <target> -o results/ -T 10
+python3 recon.py <target> -o results/ -T 10
 
 ---
 ```
