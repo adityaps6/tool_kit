@@ -147,34 +147,36 @@ def main():
     parser = argparse.ArgumentParser(description="pwny.py - HTN Exploitation Helper")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # CVE fetcher
     cve_parser = subparsers.add_parser("cve", help="Fetch and rank CVEs")
     cve_parser.add_argument("product", help="Product name (e.g., apache)")
     cve_parser.add_argument("version", help="Version (e.g., 2.4.49)")
 
-    # Web vuln tester
     web_parser = subparsers.add_parser("webtest", help="Test web vulnerabilities")
     web_parser.add_argument("url", help="Target URL (e.g., http://10.10.10.10/)")
 
     args = parser.parse_args()
 
-    if args.command == "cve":
-        print(f"[+] Fetching CVEs for {args.product} {args.version}...")
-        cves = fetch_cves(args.product, args.version)
-        ranked = rank_cves(cves)
-        for c in ranked[:10]:
-            print(f" {c[0]} | CVSS: {c[1]} | {c[2]}")
+    try:
+        if args.command == "cve":
+            print(f"[+] Fetching CVEs for {args.product} {args.version}...")
+            cves = fetch_cves(args.product, args.version)
+            ranked = rank_cves(cves)
+            for c in ranked[:10]:
+                print(f" {c[0]} | CVSS: {c[1]} | {c[2]}")
 
-    elif args.command == "webtest":
-        print(f"[+] Testing {args.url} for common vulns...")
-        results = test_web_vulns(args.url)
-        for r in results:
-            if "error" in r:
-                print(f" {r['vuln'].upper()}: ERROR - {r['error']}")
-            else:
-                status = "POSSIBLE" if r["detected"] else "Not detected"
-                print(f" {r['vuln'].upper()}: {status} (HTTP {r['status']}, Len {r['length']})")
+        elif args.command == "webtest":
+            print(f"[+] Testing {args.url} for common vulns...")
+            results = test_web_vulns(args.url)
+            for r in results:
+                if "error" in r:
+                    print(f" {r['vuln'].upper()}: ERROR - {r['error']}")
+                else:
+                    status = "POSSIBLE" if r["detected"] else "Not detected"
+                    print(f" {r['vuln'].upper()}: {status} (HTTP {r['status']}, Len {r['length']})")
 
+    except KeyboardInterrupt:
+        print("\n[!] Execution interrupted by user. Exiting gracefully...")
+        exit(0)
 
 if __name__ == "__main__":
     main()
