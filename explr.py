@@ -35,7 +35,7 @@ def print_banner():
 # -------- CONFIG -------- #
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ExploitScraper/2.0"
 HEADERS = {"User-Agent": USER_AGENT}
-LOG_DIR = "results"
+LOG_DIR = "explr_results"
 os.makedirs(LOG_DIR, exist_ok=True)
 MAX_THREADS = 5
 
@@ -51,23 +51,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # -------- SCRAPER FUNCTIONS -------- #
 
-def search_exploitdb(cve_id):
-    """Scrape Exploit-DB for CVE"""
-    results = []
-    url = f"https://www.exploit-db.com/search?cve={cve_id}"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, "html.parser")
-        for link in soup.find_all("a", href=True):
-            href = link['href']
-            if "/exploits/" in href:
-                full_url = f"https://www.exploit-db.com{href}"
-                if full_url not in results:
-                    results.append(full_url)
-    except Exception:
-        pass
-    return results
+
 
 def search_circl_lu(cve_id):
     """Scrape CIRCL LU for CVE"""
@@ -81,22 +65,6 @@ def search_circl_lu(cve_id):
         pass
     return results
 
-def search_packetstorm(cve_id):
-    """Scrape PacketStorm for CVE"""
-    results = []
-    url = f"https://packetstormsecurity.com/search/?q={cve_id}"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, "html.parser")
-        for a in soup.find_all("a", href=True):
-            href = a['href']
-            if href.endswith(tuple(POC_EXTENSIONS)):
-                full_url = f"https://packetstormsecurity.com{href}" if href.startswith('/') else href
-                results.append(full_url)
-    except Exception:
-        pass
-    return results
 
 def search_github(cve_id):
     """Search GitHub for repos & detect POC files"""
@@ -117,48 +85,43 @@ def search_github(cve_id):
         pass
     return results
 
-def search_gitlab(cve_id):
-    """Search GitLab for repos"""
-    results = []
-    url = f"https://gitlab.com/search?search={cve_id}&group_id=&project_id=&snippets=false&repository_ref="
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
-        if r.status_code == 200:
-            results.append(url)
-    except Exception:
-        pass
-    return results
 
 def search_grepapp(cve_id, outdir=None):
     """Search grep.app API for references to CVE and save results in plain text"""
     results = []
-    url = f"https://grep.app/api/search?f.lang=JSON&f.lang=Python&f.lang=JavaScript&f.lang=YAML&f.lang=Markdown&q={cve_id}"
+    url = f"https://grep.app/api/search?f.lang=Markdown&f.lang=JSON&f.lang=YAML&f.lang=Python&f.lang=JavaScript&q={cve_id}"  # fetch up to 50 hits
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json"
+    }
+
     try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
+        r = requests.get(url, headers=headers, timeout=15)
         r.raise_for_status()
         data = r.json()
 
-        if "results" in data:
-            for hit in data["results"]:
-                repo = hit.get("repo", {}).get("name", "unknown-repo")
-                path = hit.get("path", "unknown-path")
-                lines = hit.get("lines", [])
-                entry = f"Repo: {repo}\nPath: {path}\n"
-                if lines:
-                    entry += "Lines:\n"
-                    for l in lines:
-                        entry += f"  {l.get('line')}: {l.get('text')}\n"
-                entry += f"URL: https://grep.app/api/search?f.lang=JSON&f.lang=Python&f.lang=JavaScript&f.lang=YAML&f.lang=Markdown&q={cve_id}\n"
-                entry += "-"*50 + "\n"
-                results.append(entry)
+        hits = data.get("hits", {}).get("hits", [])
+        if not hits:
+            print("[!] No hits found on grep.app")
+            return []
 
-        # Save to a plain text file
+        for idx, hit in enumerate(hits):
+            owner_id = hit.get("owner_id", "unknown-owner")
+            repo = hit.get("repo", "unknown-repo")
+            path = hit.get("path", "unknown-path")
+            branch = hit.get("branch", "unknown-branch")
+            snippet = hit.get("content", {}).get("snippet", "")
+            entry = f"[{idx+1}] Owner ID: {owner_id}\nRepo: {repo}\nBranch: {branch}\nPath: {path}\nSnippet:\n{snippet}\n"
+            entry += "-"*60 + "\n"
+            results.append(entry)
+
+        # Save results to TXT
         if not outdir:
             outdir = LOG_DIR
         os.makedirs(outdir, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         grep_file = os.path.join(outdir, f"{cve_id.replace('/', '_')}-grepapp-{ts}.txt")
-        with open(grep_file, "w") as f:
+        with open(grep_file, "w", encoding="utf-8") as f:
             f.writelines(results)
 
         print(f"[+] Grep.app results saved to: {grep_file}")
@@ -167,6 +130,7 @@ def search_grepapp(cve_id, outdir=None):
         print(f"[!] Error querying grep.app: {e}")
 
     return results
+
 
 
 
@@ -197,11 +161,7 @@ def main():
 
     # Scrapers for JSON (exclude grepapp)
     scrapers = {
-        "exploitdb": search_exploitdb,
-        "circl_lu": search_circl_lu,
-        "packetstorm": search_packetstorm,
-        "github": search_github,
-        "gitlab": search_gitlab
+        "github": search_github
     }
 
     all_results = {}
