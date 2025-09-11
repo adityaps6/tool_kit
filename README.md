@@ -100,3 +100,6 @@ python3 explr.py CVE-2023-12345 -o my_results/
 
 ---
 ```
+### 🧩 enum.py
+
+`enumpy` is a new tool under development to enhance and perform enumeration more efficiently.
