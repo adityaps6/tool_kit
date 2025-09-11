@@ -1,3 +1,10 @@
+# Facing some issues with recon.py which are being looked at. THe script will be updated soon for better 
+# performnace more clear output.
+
+
+
+
+
 #!/usr/bin/env python3
 import subprocess
 import argparse
