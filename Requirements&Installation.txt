@@ -9,6 +9,7 @@
 # - whatweb
 # - snmpwalk (from net-snmp package)
 # - smbmap
+# - Install python3-nmap library using pip3 or using sudo apt for better performance
 
 # -----------------------------------------------------------
 # 📦 Installation Commands (Linux - Debian/Ubuntu/Kali)
