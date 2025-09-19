@@ -1,10 +1,5 @@
 # Facing some issues with recon.py which are being looked at. THe script will be updated soon for better 
 # performnace more clear output. Slight error in the workinf of dirsearch was identified and is being loooked at.
-
-
-
-
-
 #!/usr/bin/env python3
 import subprocess
 import argparse
