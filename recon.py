@@ -28,6 +28,7 @@ def print_banner():
 def run_cmd(command, outfile=None, quiet=False):
     """Run a shell command and save output if outfile is provided. Suppress output if quiet=True."""
     try:
+        # Use same args in both modes but keep semantics for quiet flag
         if quiet:
             result = subprocess.run(
                 command, shell=True,
@@ -37,16 +38,36 @@ def run_cmd(command, outfile=None, quiet=False):
                 timeout=600
             )
         else:
-            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=600)
-        output = result.stdout
+            result = subprocess.run(
+                command, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=600
+            )
+        # Combine stdout and stderr so tools that print to stderr are captured
+        output = ""
+        if result.stdout:
+            output += result.stdout
+        if result.stderr:
+            # Put stderr after stdout but keep separation for readability
+            if output and not output.endswith("\n"):
+                output += "\n"
+            output += "[stderr]\n" + result.stderr
+
+        # If an outfile path is provided, write the combined output there.
         if outfile:
+            # use append mode for commands that may write via shell redirection too, but
+            # to preserve previous behavior we will overwrite file by default.
             with open(outfile, "w") as f:
                 f.write(output)
+
         return output
     except subprocess.TimeoutExpired:
         return f"[!] Command timed out: {command}"
     except Exception as e:
         return f"[!] Error running command: {command} | {str(e)}"
+
 
 
 # -------- Recon Functions (quiet=True to suppress messages) -------- #
