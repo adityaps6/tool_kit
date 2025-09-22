@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 enumerator.py (updated)
+    NOT FUNCTIONAINIG AS EXPECTED
 
 Features added:
  - Integrates amass and subfinder for subdomain enumeration when available.
